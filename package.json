@@ -190,8 +190,8 @@
     "webpack-merge": "^6.0.1"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Ollama Chat",
+    "appId": "org.erb.ollamachat",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
