@@ -1,16 +1,13 @@
 {
-  "name": "electron-react-boilerplate",
-  "description": "A foundation for scalable desktop apps",
+  "name": "ollama-chat-desktop",
+  "description": "Ollama Chat Desktop",
   "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
+    "ollama chat",
+    "ollama",
+    "ollama chat ui",
+    "ollama chat desktop",
+    "ollama chat ui desktop",
+    "ollama chat ui electron"
   ],
   "homepage": "https://github.com/electron-react-boilerplate/electron-react-boilerplate#readme",
   "bugs": {
@@ -22,8 +19,8 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
+    "name": "Ollama Chat",
+    "email": "rakeshyadavnita@gmail.com",
     "url": "https://electron-react-boilerplate.js.org"
   },
   "contributors": [
@@ -178,6 +175,7 @@
     "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
     "tailwindcss": "^3.3.5",
+    "tailwindcss-animate": "^1.0.7",
     "terser-webpack-plugin": "^5.3.14",
     "ts-jest": "^29.2.6",
     "ts-loader": "^9.5.2",
