@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import ChatWindow from './components/ChatWindow';
 import ModelSelector from './components/ModelSelector';
 import SettingsPanel from './components/SettingsPanel';
-import type { Message, Model, Settings } from './types';
+import type { Message, Model, Settings, Chat } from './types';
 import './globals.css';
 
 const App: React.FC = () => {
@@ -19,6 +19,8 @@ const App: React.FC = () => {
     temperature: 0.7,
     maxTokens: 2000,
   });
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
   // Define load functions before useEffect
   const loadModels = async () => {
@@ -52,21 +54,83 @@ const App: React.FC = () => {
     }
   };
 
+  // Create a new chat function
+  const createNewChat = () => {
+    const newChatId = Date.now().toString();
+    const newChat: Chat = {
+      id: newChatId,
+      title: `New Chat ${chats.length + 1}`,
+      messages: [],
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    };
+    
+    // Clear current messages
+    setMessages([]);
+    
+    // Set all other chats as inactive
+    const updatedChats = chats.map((chat) => ({
+      ...chat,
+      isActive: false,
+    }));
+    
+    // Add the new chat and update state
+    const newChats = [...updatedChats, newChat];
+    setChats(newChats);
+    setActiveChatId(newChatId);
+    
+    // Save to localStorage
+    localStorage.setItem('chats', JSON.stringify(newChats));
+  };
+
   // Load initial data
   useEffect(() => {
-    const savedMessages = localStorage.getItem('chatHistory');
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+    const savedChats = localStorage.getItem('chats');
+    if (savedChats) {
+      const parsedChats = JSON.parse(savedChats);
+      setChats(parsedChats);
+      
+      // Set the last active chat as current
+      const lastActiveChat = parsedChats.find((chat: Chat) => chat.isActive);
+      if (lastActiveChat) {
+        setActiveChatId(lastActiveChat.id);
+        setMessages(lastActiveChat.messages);
+      } else if (parsedChats.length > 0) {
+        // If no active chat, set the first one as active
+        setActiveChatId(parsedChats[0].id);
+        setMessages(parsedChats[0].messages);
+        
+        // Mark this chat as active
+        const updatedChats = parsedChats.map((chat: Chat, index: number) => ({
+          ...chat,
+          isActive: index === 0
+        }));
+        setChats(updatedChats);
+        localStorage.setItem('chats', JSON.stringify(updatedChats));
+      } else {
+        createNewChat();
+      }
+    } else {
+      createNewChat();
     }
 
     loadModels();
     loadSettings();
   }, []);
 
-  // Save chat history to localStorage
+  // Save chat history to localStorage whenever chats or messages change
   useEffect(() => {
-    localStorage.setItem('chatHistory', JSON.stringify(messages));
-  }, [messages]);
+    if (activeChatId) {
+      // Update the messages of the active chat
+      const updatedChats = chats.map((chat) => 
+        chat.id === activeChatId 
+          ? { ...chat, messages: messages } 
+          : chat
+      );
+      setChats(updatedChats);
+      localStorage.setItem('chats', JSON.stringify(updatedChats));
+    }
+  }, [messages, activeChatId, chats]);
 
   // Set up streaming response listeners
   useEffect(() => {
@@ -125,6 +189,54 @@ const App: React.FC = () => {
       removeErrorListener();
     };
   }, []);
+
+  const switchChat = (chatId: string) => {
+    // Find the selected chat
+    const selectedChat = chats.find(chat => chat.id === chatId);
+    if (!selectedChat) return;
+    
+    // Set all chats as inactive except the selected one
+    const updatedChats = chats.map(chat => ({
+      ...chat,
+      isActive: chat.id === chatId
+    }));
+    
+    setChats(updatedChats);
+    setActiveChatId(chatId);
+    setMessages(selectedChat.messages);
+    
+    // Save to localStorage
+    localStorage.setItem('chats', JSON.stringify(updatedChats));
+  };
+
+  const deleteChat = (chatId: string) => {
+    // Filter out the chat to delete
+    const filteredChats = chats.filter(chat => chat.id !== chatId);
+    
+    // If we're deleting the active chat, switch to another one
+    if (activeChatId === chatId) {
+      if (filteredChats.length > 0) {
+        // Set the first chat as active
+        const updatedChats = filteredChats.map((chat, index) => ({
+          ...chat,
+          isActive: index === 0
+        }));
+        setChats(updatedChats);
+        setActiveChatId(updatedChats[0].id);
+        setMessages(updatedChats[0].messages);
+        localStorage.setItem('chats', JSON.stringify(updatedChats));
+      } else {
+        // If no chats left, create a new one
+        setChats([]);
+        localStorage.setItem('chats', JSON.stringify([]));
+        createNewChat();
+      }
+    } else {
+      // If we're not deleting the active chat, just update the list
+      setChats(filteredChats);
+      localStorage.setItem('chats', JSON.stringify(filteredChats));
+    }
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim() || !selectedModel) return;
@@ -189,7 +301,17 @@ const App: React.FC = () => {
   };
 
   const handleClearChat = () => {
-    setMessages([]);
+    if (activeChatId) {
+      // Create a new array of chats with the active chat's messages cleared
+      const updatedChats = chats.map(chat => 
+        chat.id === activeChatId 
+          ? { ...chat, messages: [] } 
+          : chat
+      );
+      setChats(updatedChats);
+      setMessages([]);
+      localStorage.setItem('chats', JSON.stringify(updatedChats));
+    }
   };
 
   const handleRefreshModels = () => {
@@ -244,6 +366,26 @@ const App: React.FC = () => {
     }
   };
 
+  // Rename chat to first message content if title is default
+  useEffect(() => {
+    if (activeChatId && messages.length > 0) {
+      const activeChat = chats.find(chat => chat.id === activeChatId);
+      if (activeChat && activeChat.title.startsWith('New Chat') && messages[0]?.role === 'user') {
+        // Get first few characters of the first user message
+        const newTitle = messages[0].content.slice(0, 25) + (messages[0].content.length > 25 ? '...' : '');
+        
+        // Update chat title
+        const updatedChats = chats.map(chat => 
+          chat.id === activeChatId 
+            ? { ...chat, title: newTitle } 
+            : chat
+        );
+        setChats(updatedChats);
+        localStorage.setItem('chats', JSON.stringify(updatedChats));
+      }
+    }
+  }, [messages, activeChatId, chats]);
+
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
       <header className="border-b p-3 bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
@@ -267,6 +409,17 @@ const App: React.FC = () => {
                 <path d="M3 6h18"></path>
                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+            <button
+              onClick={createNewChat}
+              className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="New Chat"
+              title="New Chat"
+              disabled={loading}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14"></path>
               </svg>
             </button>
             <button
@@ -298,16 +451,72 @@ const App: React.FC = () => {
       )}
 
       <main className="flex flex-1 overflow-hidden">
-        <div className="w-60 border-r bg-muted/20 shadow-inner overflow-y-auto transition-all duration-300 hover:shadow-md">
-          <ModelSelector
-            models={models}
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
-            onRefreshModels={handleRefreshModels}
-            onPullModel={handlePullModel}
-            onDeleteModel={handleDeleteModel}
-            loading={loading}
-          />
+        <div className="w-60 border-r bg-muted/20 shadow-inner overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md">
+          <div className="p-3 border-b">
+            <button
+              onClick={createNewChat}
+              className="w-full flex items-center justify-center gap-2 p-2 text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-sm transition-all"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14"></path>
+              </svg>
+              New Chat
+            </button>
+          </div>
+          
+          <div className="overflow-y-auto flex-1 p-2">
+            <div className="space-y-1 mb-4">
+              <h3 className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">Chat History</h3>
+              {chats.length === 0 ? (
+                <div className="text-center p-4 text-sm text-muted-foreground">
+                  No chat history
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {chats.map(chat => (
+                    <div
+                      key={chat.id}
+                      className={`
+                        group flex items-center justify-between p-2 text-sm rounded-md cursor-pointer
+                        ${chat.isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}
+                      `}
+                      onClick={() => switchChat(chat.id)}
+                    >
+                      <div className="truncate flex-1">{chat.title}</div>
+                      {chat.isActive && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteChat(chat.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded-md text-muted-foreground"
+                          title="Delete Chat"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="pt-2 border-t">
+              <ModelSelector
+                models={models}
+                selectedModel={selectedModel}
+                onSelectModel={setSelectedModel}
+                onRefreshModels={handleRefreshModels}
+                onPullModel={handlePullModel}
+                onDeleteModel={handleDeleteModel}
+                loading={loading}
+              />
+            </div>
+          </div>
         </div>
         
         <div className="flex-1 overflow-hidden">
