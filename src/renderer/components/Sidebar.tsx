@@ -47,9 +47,9 @@ const Sidebar: React.FC<SidebarProps> = function ({
   const [isRenamingChatId, setIsRenamingChatId] = useState<string | null>(null);
   const [newChatTitle, setNewChatTitle] = useState('');
   const [expanded, setExpanded] = useState(false);
-  
+
   // Filter chats based on search term
-  const filteredChats = chats.filter((chat) => 
+  const filteredChats = chats.filter((chat) =>
     chat.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -80,16 +80,18 @@ const Sidebar: React.FC<SidebarProps> = function ({
   };
 
   // Base classes for the sidebar
-  const sidebarBaseClasses = "h-full flex flex-col border-r bg-gray-50 text-gray-900 transition-width duration-300 ease-in-out";
+  const sidebarBaseClasses =
+    'h-full flex flex-col border-r bg-gray-50 text-gray-900 transition-width duration-300 ease-in-out';
   // Classes for collapsed state (mobile)
-  const sidebarCollapsedClasses = "w-[60px] overflow-hidden";
+  const sidebarCollapsedClasses = 'w-[60px] overflow-hidden';
   // Classes for expanded state (desktop default, mobile expanded)
-  const sidebarExpandedClasses = "w-64";
+  const sidebarExpandedClasses = 'w-64';
   // Classes for expanded state on mobile (absolute positioning)
-  const sidebarMobileExpandedClasses = "sm:absolute sm:z-50 sm:h-full sm:shadow-lg";
+  const sidebarMobileExpandedClasses =
+    'sm:absolute sm:z-50 sm:h-full sm:shadow-lg';
 
   return (
-    <div 
+    <div
       className={`
         ${sidebarBaseClasses} 
         ${expanded ? `${sidebarExpandedClasses} ${sidebarMobileExpandedClasses}` : `sm:${sidebarCollapsedClasses} ${sidebarExpandedClasses}`}
@@ -101,13 +103,15 @@ const Sidebar: React.FC<SidebarProps> = function ({
       <button
         type="button"
         onClick={toggleSidebar}
-        className={`sm:flex hidden absolute top-2 -right-6 z-60 w-6 h-6 bg-blue-600 text-white rounded-r-md items-center justify-center cursor-pointer ${expanded ? '': 'sm:right-[-24px]'}`}
+        className={`sm:flex hidden absolute top-2 -right-6 z-60 w-6 h-6 bg-blue-600 text-white rounded-r-md items-center justify-center cursor-pointer ${expanded ? '' : 'sm:right-[-24px]'}`}
       >
         {expanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
       </button>
-      
+
       {/* Header Section */}
-      <div className={`p-4 border-b border-gray-200 ${expanded ? '' : 'sm:hidden'}`}>
+      <div
+        className={`p-4 border-b border-gray-200 ${expanded ? '' : 'sm:hidden'}`}
+      >
         <h1 className="text-lg font-bold">Ollama Chat</h1>
         <button
           type="button"
@@ -120,7 +124,9 @@ const Sidebar: React.FC<SidebarProps> = function ({
       </div>
 
       {/* Chat History Section */}
-      <div className={`flex-1 h-[40%] overflow-y-auto custom-scrollbar ${expanded ? '' : 'sm:overflow-hidden'}`}>
+      <div
+        className={`flex-1 h-[40%] overflow-y-auto custom-scrollbar ${expanded ? '' : 'sm:overflow-hidden'}`}
+      >
         <div className={`p-4 ${expanded ? '' : 'sm:p-1'}`}>
           {/* Search Input - hidden on collapsed mobile */}
           <div className={`relative mb-4 ${expanded ? '' : 'sm:hidden'}`}>
@@ -133,24 +139,29 @@ const Sidebar: React.FC<SidebarProps> = function ({
             />
             <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
           </div>
-          
+
           {/* Chat List */}
-          <div className={`space-y-1 ${expanded ? '' : 'sm:flex sm:flex-col sm:items-center'}`}>
+          <div
+            className={`space-y-1 ${expanded ? '' : 'sm:flex sm:flex-col sm:items-center'}`}
+          >
             {filteredChats.length > 0 ? (
               filteredChats.map((chat) => (
-                <div 
+                <div
                   key={chat.id}
                   className={`rounded-md cursor-pointer group transition-colors duration-150 
-                    ${chat.id === activeChatId 
-                      ? 'bg-blue-100 border-l-2 border-blue-500' 
-                      : 'hover:bg-gray-100 border-l-2 border-transparent'
+                    ${
+                      chat.id === activeChatId
+                        ? 'bg-blue-100 border-l-2 border-blue-500'
+                        : 'hover:bg-gray-100 border-l-2 border-transparent'
                     }
                     ${expanded ? 'p-2' : 'sm:p-2 sm:w-10 sm:h-10 sm:flex sm:items-center sm:justify-center'}
                   `}
                 >
                   {isRenamingChatId === chat.id ? (
                     // Rename Input - hidden on collapsed mobile
-                    <div className={`flex items-center ${expanded ? '' : 'sm:hidden'}`}>
+                    <div
+                      className={`flex items-center ${expanded ? '' : 'sm:hidden'}`}
+                    >
                       <input
                         type="text"
                         value={newChatTitle}
@@ -178,8 +189,8 @@ const Sidebar: React.FC<SidebarProps> = function ({
                     </div>
                   ) : (
                     // Chat Item Button
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => onSwitchChat(chat.id)}
                       className={`w-full text-left ${expanded ? '' : 'sm:w-auto'}`}
                       title={chat.title} // Tooltip for collapsed view
@@ -190,8 +201,10 @@ const Sidebar: React.FC<SidebarProps> = function ({
                       }}
                     >
                       {/* Icon for collapsed view */}
-                      {!expanded && <Info size={18} className="text-gray-600" />} 
-                      
+                      {!expanded && (
+                        <Info size={18} className="text-gray-600" />
+                      )}
+
                       {/* Content for expanded view */}
                       <div className={`${expanded ? '' : 'sm:hidden'}`}>
                         <div className="flex justify-between items-center">
@@ -202,7 +215,10 @@ const Sidebar: React.FC<SidebarProps> = function ({
                           <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); startRenaming(chat); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startRenaming(chat);
+                              }}
                               className="p-1 rounded text-gray-500 hover:text-gray-700 hover:bg-gray-200"
                               title="Rename Chat"
                             >
@@ -210,7 +226,10 @@ const Sidebar: React.FC<SidebarProps> = function ({
                             </button>
                             <button
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.id); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteChat(chat.id);
+                              }}
                               className="p-1 rounded text-gray-500 hover:text-red-600 hover:bg-red-100"
                               title="Delete Chat"
                             >
@@ -227,7 +246,9 @@ const Sidebar: React.FC<SidebarProps> = function ({
                 </div>
               ))
             ) : (
-              <div className={`text-center text-gray-500 p-4 text-sm ${expanded ? '' : 'sm:hidden'}`}>
+              <div
+                className={`text-center text-gray-500 p-4 text-sm ${expanded ? '' : 'sm:hidden'}`}
+              >
                 No chats found
               </div>
             )}
@@ -236,7 +257,9 @@ const Sidebar: React.FC<SidebarProps> = function ({
       </div>
 
       {/* Model Selection Section */}
-      <div className={`p-4 border-t border-gray-200 ${expanded ? '' : 'sm:hidden'}`}>
+      <div
+        className={`p-4 border-t border-gray-200 ${expanded ? '' : 'sm:hidden'}`}
+      >
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-sm font-semibold">Model</h2>
           <button
@@ -262,7 +285,9 @@ const Sidebar: React.FC<SidebarProps> = function ({
           className="w-full p-2 text-sm border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {models.length === 0 ? (
-            <option value="" disabled>No models found</option>
+            <option value="" disabled>
+              No models found
+            </option>
           ) : (
             models.map((model) => (
               <option key={model.name} value={model.name}>
@@ -283,8 +308,12 @@ const Sidebar: React.FC<SidebarProps> = function ({
       </div>
 
       {/* Footer Section */}
-      <div className={`p-4 border-t border-gray-200 ${expanded ? '' : 'sm:flex sm:flex-col sm:items-center sm:py-4'}`}>
-        <div className={`flex ${expanded ? 'justify-around' : 'sm:flex-col sm:space-y-2'}`}>
+      <div
+        className={`p-4 border-t border-gray-200 ${expanded ? '' : 'sm:flex sm:flex-col sm:items-center sm:py-4'}`}
+      >
+        <div
+          className={`flex ${expanded ? 'justify-around' : 'sm:flex-col sm:space-y-2'}`}
+        >
           <button
             type="button"
             onClick={onOpenSettings}
@@ -292,16 +321,22 @@ const Sidebar: React.FC<SidebarProps> = function ({
             title="Settings"
           >
             <Settings className="w-5 h-5" />
-            <span className={`ml-1 ${expanded ? 'sr-only' : 'sm:hidden'}`}>Settings</span>
+            <span className={`ml-1 ${expanded ? 'sr-only' : 'sm:hidden'}`}>
+              Settings
+            </span>
           </button>
           <button
             type="button"
-            onClick={() => window.open('https://github.com/your-org/your-repo', '_blank')}
+            onClick={() =>
+              window.open('https://github.com/your-org/your-repo', '_blank')
+            }
             className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
             title="About"
           >
             <Info className="w-5 h-5" />
-            <span className={`ml-1 ${expanded ? 'sr-only' : 'sm:hidden'}`}>About</span>
+            <span className={`ml-1 ${expanded ? 'sr-only' : 'sm:hidden'}`}>
+              About
+            </span>
           </button>
         </div>
       </div>
@@ -309,4 +344,4 @@ const Sidebar: React.FC<SidebarProps> = function ({
   );
 };
 
-export default Sidebar; 
+export default Sidebar;
