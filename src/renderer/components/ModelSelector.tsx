@@ -56,7 +56,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     'Select a model';
 
   return (
-    <div className="flex flex-col h-full bg-background border-r">
+    <div className="flex flex-col h-full bg-background">
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold mb-4 flex items-center text-foreground">
           <svg
