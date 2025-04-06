@@ -120,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = function ({
       </div>
 
       {/* Chat History Section */}
-      <div className={`flex-1 overflow-y-auto custom-scrollbar ${expanded ? '' : 'sm:overflow-hidden'}`}>
+      <div className={`flex-1 h-[40%] overflow-y-auto custom-scrollbar ${expanded ? '' : 'sm:overflow-hidden'}`}>
         <div className={`p-4 ${expanded ? '' : 'sm:p-1'}`}>
           {/* Search Input - hidden on collapsed mobile */}
           <div className={`relative mb-4 ${expanded ? '' : 'sm:hidden'}`}>

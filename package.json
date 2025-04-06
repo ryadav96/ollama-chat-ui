@@ -214,6 +214,7 @@
       "gatekeeperAssess": false
     },
     "dmg": {
+      "format": "UDZO",
       "contents": [
         {
           "x": 130,

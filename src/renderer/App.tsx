@@ -464,8 +464,8 @@ const App: React.FC = () => {
             </button>
           </div>
           
-          <div className="overflow-y-auto flex-1 p-2">
-            <div className="space-y-1 mb-4">
+          <div className=" relative overflow-y-auto flex-1 p-2">
+            <div className="space-y-1 mb-4 h-[60%] overflow-y-auto">
               <h3 className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">Chat History</h3>
               {chats.length === 0 ? (
                 <div className="text-center p-4 text-sm text-muted-foreground">
@@ -505,7 +505,7 @@ const App: React.FC = () => {
               )}
             </div>
             
-            <div className="pt-2 border-t">
+            <div className="pt-2 border-t absolute bottom-0 left-0 right-0">
               <ModelSelector
                 models={models}
                 selectedModel={selectedModel}
@@ -519,7 +519,7 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden mb-4">
           <ChatWindow
             messages={messages}
             loading={loading}

@@ -1,4 +1,3 @@
-const { notarize } = require('@electron/notarize');
 const { build } = require('../../package.json');
 
 exports.default = async function notarizeMacos(context) {
@@ -25,6 +24,9 @@ exports.default = async function notarizeMacos(context) {
     return;
   }
 
+  // Dynamic import of ESM module
+  const { notarize } = await import('@electron/notarize');
+
   const appName = context.packager.appInfo.productFilename;
 
   await notarize({
@@ -33,6 +35,6 @@ exports.default = async function notarizeMacos(context) {
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASS,
-    teamId: process.env.APPLE_TEAM_ID,
+    teamId: process.env.APPLE_TEAM_ID, // Fix: Changed from TEAM to TEAM_ID
   });
 };
