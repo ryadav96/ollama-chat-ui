@@ -21,6 +21,8 @@ import {
   pullModel,
   showModelDetails,
   deleteModel,
+  stopChatGeneration,
+  generateChatTitle,
 } from './api';
 
 class AppUpdater {
@@ -186,6 +188,25 @@ ipcMain.on('generate-chat-stream', (event, { model, messages, parameters }) => {
     if (!event.sender.isDestroyed()) {
       event.sender.send('chat-response-error', { error: 'Failed to set up streaming chat' });
     }
+  }
+});
+
+// Handler for stopping chat generation
+ipcMain.on('stop-chat-generation', () => {
+  try {
+    stopChatGeneration();
+  } catch (error) {
+    console.error('Error stopping chat generation:', error);
+  }
+});
+
+// Handler for generating chat titles
+ipcMain.handle('generate-chat-title', async (_, { model, userMessage }) => {
+  try {
+    return await generateChatTitle(model, userMessage);
+  } catch (error) {
+    console.error('Error generating chat title:', error);
+    return { title: 'New Chat', error: 'Failed to generate title' };
   }
 });
 

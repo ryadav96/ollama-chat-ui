@@ -57,6 +57,11 @@ declare global {
         messages: any[]
         parameters: any
       }) => void
+      stopChatGeneration: () => void
+      generateChatTitle: (params: {
+        model: string
+        userMessage: string
+      }) => Promise<{ title: string }>
       onChatResponseChunk: (callback: (data: StreamChunk) => void) => () => void
       onChatResponseDone: (callback: (data: StreamDone) => void) => () => void
       onChatResponseError: (callback: (data: StreamError) => void) => () => void

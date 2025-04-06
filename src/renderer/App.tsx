@@ -130,7 +130,7 @@ const App: React.FC = () => {
       setChats(updatedChats);
       localStorage.setItem('chats', JSON.stringify(updatedChats));
     }
-  }, [messages, activeChatId, chats]);
+  }, [messages, activeChatId]);
 
   // Set up streaming response listeners
   useEffect(() => {
@@ -384,7 +384,7 @@ const App: React.FC = () => {
         localStorage.setItem('chats', JSON.stringify(updatedChats));
       }
     }
-  }, [messages, activeChatId, chats]);
+  }, [messages, activeChatId]);
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">

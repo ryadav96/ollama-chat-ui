@@ -9,10 +9,18 @@ import type { Message } from "../types"
 interface ChatWindowProps {
   messages: Message[]
   loading: boolean
+  isStopping?: boolean
   onSendMessage: (content: string) => void
+  onStopGeneration?: () => void
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, loading, onSendMessage }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  messages,
+  loading,
+  isStopping = false,
+  onSendMessage,
+  onStopGeneration
+}) => {
   const [input, setInput] = useState<string>("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -102,21 +110,34 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, loading, onSendMessag
             className="min-h-[44px] resize-none focus-ring"
             rows={1}
           />
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={loading || !input.trim()}
-            className="shrink-0"
-            variant={loading ? "outline" : "gradient"}
-            size="lg"
-          >
-            {loading ? (
-              <div className="flex items-center">
-                <span className="animate-pulse">•</span>
-                <span className="animate-pulse ml-1 delay-75">•</span>
-                <span className="animate-pulse ml-1 delay-150">•</span>
-              </div>
-            ) : "Send"}
-          </Button>
+          {loading ? (
+            <Button 
+              onClick={onStopGeneration} 
+              disabled={isStopping}
+              className="shrink-0 bg-destructive/90 hover:bg-destructive text-destructive-foreground"
+              size="lg"
+              type="button"
+            >
+              {isStopping ? (
+                <div className="flex items-center">
+                  <span className="animate-pulse">•</span>
+                  <span className="animate-pulse ml-1 delay-75">•</span>
+                  <span className="animate-pulse ml-1 delay-150">•</span>
+                </div>
+              ) : "Stop"}
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={!input.trim()}
+              className="shrink-0"
+              variant="gradient"
+              size="lg"
+              type="button"
+            >
+              Send
+            </Button>
+          )}
         </div>
       </div>
     </div>

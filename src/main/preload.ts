@@ -9,6 +9,11 @@ contextBridge.exposeInMainWorld('api', {
   startChatStream: (params: { model: string; messages: any[]; parameters: any }) => {
     ipcRenderer.send('generate-chat-stream', params);
   },
+  stopChatGeneration: () => {
+    ipcRenderer.send('stop-chat-generation');
+  },
+  generateChatTitle: (params: { model: string; userMessage: string }) =>
+    ipcRenderer.invoke('generate-chat-title', params),
   onChatResponseChunk: (callback: (data: any) => void) => {
     ipcRenderer.on('chat-response-chunk', (_event, data) => callback(data));
     return () => ipcRenderer.removeAllListeners('chat-response-chunk');

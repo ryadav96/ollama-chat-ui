@@ -2,6 +2,7 @@ import axios from 'axios'
 import { EventEmitter } from 'events'
 
 let API_BASE_URL = 'http://localhost:11434'
+let activeStreamController: AbortController | null = null
 
 export const setApiBaseUrl = (url: string) => {
   API_BASE_URL = url
@@ -50,6 +51,9 @@ export const generateChatStream = (
 ) => {
   const eventEmitter = new EventEmitter()
   
+  // Create an AbortController to allow cancellation
+  activeStreamController = new AbortController()
+  
   // Make the streaming request
   axios({
     method: 'post',
@@ -61,6 +65,7 @@ export const generateChatStream = (
       ...parameters,
     },
     responseType: 'stream',
+    signal: activeStreamController.signal,
   })
   .then(response => {
     let streamedContent = ''
@@ -87,6 +92,8 @@ export const generateChatStream = (
               content: streamedContent,
               done: true,
             })
+            // Clear the active controller when done
+            activeStreamController = null
           }
         }
       } catch (error) {
@@ -96,17 +103,86 @@ export const generateChatStream = (
     
     response.data.on('end', () => {
       eventEmitter.emit('end')
+      // Clear the active controller when done
+      activeStreamController = null
     })
     
     response.data.on('error', (error: Error) => {
       eventEmitter.emit('error', error)
+      // Clear the active controller on error
+      activeStreamController = null
     })
   })
   .catch(error => {
-    eventEmitter.emit('error', error)
+    // Don't report error if it's from an abortion
+    if (!axios.isCancel(error)) {
+      eventEmitter.emit('error', error)
+    } else {
+      eventEmitter.emit('done', {
+        content: 'Generation stopped',
+        done: true,
+      })
+    }
+    // Clear the active controller on error/abort
+    activeStreamController = null
   })
   
   return eventEmitter
+}
+
+// Stop any active generation
+export const stopChatGeneration = () => {
+  if (activeStreamController) {
+    activeStreamController.abort()
+    activeStreamController = null
+    return true
+  }
+  return false
+}
+
+// Generate a title for a chat using the LLM
+export const generateChatTitle = async (
+  model: string,
+  userMessage: string,
+) => {
+  try {
+    // Create a system message asking the model to generate a short title
+    const messages = [
+      {
+        role: 'system',
+        content: 'Generate a short, concise title (max 5 words) for a conversation that starts with this user message. Return only the title without quotes or explanations.'
+      },
+      {
+        role: 'user',
+        content: userMessage
+      }
+    ]
+
+    const response = await axios.post(
+      `${API_BASE_URL}/api/chat`,
+      {
+        model,
+        messages,
+        stream: false,
+        // Use lower temperature for more predictable title generation
+        temperature: 0.3,
+        max_tokens: 20,
+      }
+    )
+    
+    const title = response.data.message?.content?.trim() || 'New Chat'
+    
+    // Ensure title isn't too long
+    return {
+      title: title.length > 30 ? title.substring(0, 30) + '...' : title
+    }
+  } catch (error: any) {
+    console.error('Error generating chat title:', error)
+    return {
+      title: 'New Chat',
+      error: error.message
+    }
+  }
 }
 
 export const pullModel = async (modelName: string) => {
