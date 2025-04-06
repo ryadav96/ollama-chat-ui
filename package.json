@@ -80,8 +80,14 @@
     ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/.erb/mocks/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy",
+      "^react-markdown$": "<rootDir>/.erb/mocks/reactMarkdownMock.js",
+      "^rehype-raw$": "<rootDir>/.erb/mocks/rehypeMock.js",
+      "^remark-gfm$": "<rootDir>/.erb/mocks/remarkMock.js"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!react-markdown|rehype-raw|remark-gfm)"
+    ],
     "setupFiles": [
       "./.erb/scripts/check-build-exists.ts"
     ],

@@ -130,7 +130,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-muted-foreground">
                         {model.size
-                          ? `${(model.size / 1e9).toFixed(1)} GB`
+                          ? typeof model.size === 'number'
+                            ? `${(model.size / 1e9).toFixed(1)} GB`
+                            : model.size
                           : '?'}
                       </span>
                       {hoveredModel === model.name && (
